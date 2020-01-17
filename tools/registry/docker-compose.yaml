@@ -1,0 +1,13 @@
+version: "3"
+
+volumes:
+  registry:
+
+services:
+  registry:
+    restart: always
+    image: registry:2
+    ports:
+      - 5000:5000
+    volumes:
+      - registry:/var/lib/registry

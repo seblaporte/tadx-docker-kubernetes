@@ -1,0 +1,83 @@
+= Démonstration Docker, Docker-compose & Kubernetes
+
+WARNING: Les instructions ci-dessous peuvent varier en fonction du déploiement de Kubernetes utilisé.
+
+Déploiement d'un site web hébergé par un serveur Nginx de 3 manières :
+
+- Avec Docker uniquement
+- Avec l'outil Docker-compose
+- Avec Kubernetes 
+
+== Mise en place de l'environnement
+
+=== Docker Registry
+
+NOTE: Un registry privé permet de stocker les images Docker pour Kubernetes.
+
+Déploiement du registry avec Docker en local :
+
+[source,bash]
+----
+cd registry && docker-compose up -d
+----
+
+=== Reverse-proxy Traefik
+
+NOTE: Le reverse proxy permet d'accéder au services gérés par Kubernetes.
+
+Déployement de Traefik dans Kubernetes :
+
+[source,bash]
+----
+cd traefik && kubectl apply -f traefik.yaml -n kube-system
+----
+
+=== Dashboard Kubernetes
+
+==== Récupération du token
+
+NOTE: Ce token permet de s'authentifier sur la console Kubernetes
+
+`kubectl get secret $(kubectl get serviceaccount kubernetes-dashboard --namespace kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" --namespace kubernetes-dashboard | base64 --decode`
+
+==== URL d'accès
+
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/overview?namespace=default
+
+== Déploiement
+
+== Avec Docker uniquement
+
+Répertoire `hello-nginx/docker`
+
+[source,bash]
+----
+docker build -t hello-nginx .
+docker run -p 8080:80 --rm --name my-hello-nginx hello-nginx
+----
+
+NOTE: Le service Nginx est accessible à l'adresse http://localhost:8080
+
+== Avec Docker-compose
+
+Répertoire `hello-nginx/docker-compose`
+
+[source,bash]
+----
+docker-compose up
+----
+
+NOTE: Le service Nginx est accessible à l'adresse http://localhost:8080
+
+== Avec Kubernetes
+
+Répertoire `hello-nginx/k8s`
+
+WARNING: Nécessite d'ajouter la ligne suivante au fichier `/etc/hosts` de la machine hôte : `127.0.0.1 nginx.local`.
+
+[source,bash]
+----
+kubectl apply -k kustomization.yaml
+----
+
+NOTE: Le service Nginx est accessible à l'adresse http://nginx.local
